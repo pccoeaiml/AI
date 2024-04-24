@@ -1,0 +1,56 @@
+class Graph():
+    def __init__(self):
+        self.graph = {}
+
+    def add_edge(self, node, neighbors):
+        self.graph[node] = neighbors
+
+    def print_graph(self):
+        for node, neighbors in self.graph.items():
+            print(f"{node}: {neighbors}")
+
+def best_first_search(graph, start, goal, heuristic):
+    visited = set()
+    path = []
+    queue = [(heuristic[start], start)]
+
+    while queue:
+        queue.sort()
+        cost, current_node = queue.pop(0)  # pop the node with the lowest heuristic value
+        if current_node not in visited:
+            visited.add(current_node)
+            path.append(current_node)
+            if current_node == goal:
+                return path, cost
+            neighbors = graph.graph[current_node]
+            for neighbor in neighbors:
+                if neighbor not in visited:
+                    queue.append((heuristic[neighbor], neighbor))
+
+    return None, None
+
+def main():
+    graph = Graph()
+
+    num_nodes = int(input("Enter the number of nodes in the graph: "))
+    for _ in range(num_nodes):
+        node = input("Enter the name of the node: ")
+        neighbors = input("Enter neighbors of the node separated by spaces: ").split()
+        graph.add_edge(node, neighbors)
+
+    heuristic = {}
+    for node in graph.graph:
+        heuristic[node] = int(input(f"Enter heuristic value for node {node}: "))
+
+    start_node = input("Enter the start node: ")
+    goal_node = input("Enter the goal node: ")
+
+    path, cost = best_first_search(graph, start_node, goal_node, heuristic)
+    if path:
+        print("Path found:", path)
+        print("Cost of the path:", cost)
+    else:
+        print("No path found.")
+
+if __name__ == "__main__":
+    main()

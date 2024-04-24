@@ -1,0 +1,71 @@
+import heapq
+def is_valid(start_state):  #WRITE THE CONDITIONS WHICH ARE FALSE.
+    m,c,b=start_state
+    if m<0 or c<0 or m>3 or c>3:  #invalid state
+        return False
+    if c>m and m>0:  #cannibles those who are going to eat missionaries.
+        return False
+    if ((3-c) > (3-m)) and ((3-m)> 0):
+        return False
+    return True
+
+def successor(state):
+    m,c,b=state
+    moves=[]  #boat will carry maximum 2
+    if b==1:  #boat is at left
+        if is_valid((m,c-2,0)):
+            moves.append((m,c-2,0))
+        if is_valid((m-2,c,0)):
+            moves.append((m-2,c,0))
+        if is_valid((m-1,c-1,0)):
+            moves.append((m-1,c-1,0))
+        if is_valid((m,c-1,0)):
+            moves.append((m,c-1,0))
+        if is_valid((m-1,c,0)):
+            moves.append((m-1,c,0))
+    else:
+        if is_valid((m,c+2,1)):
+            moves.append((m,c+2,1))
+        if is_valid((m+2,c,1)):
+            moves.append((m+2,c,1))
+        if is_valid((m+1,c+1,1)):
+            moves.append((m+1,c+1,1))
+        if is_valid((m,c+1,1)):
+            moves.append((m,c+1,1))
+        if is_valid((m+1,c,1)):
+            moves.append((m+1,c,1))
+
+    return moves
+
+def heuristic(state):
+    m,c,b=state
+    return (m+c-2)//2
+
+def astar(start_state):
+    heap=[]                                        #cost
+    heapq.heappush(heap,(heuristic(start_state),0,[start_state]))
+    visited=set()
+    while heap:
+        _,cost,path=heapq.heappop(heap)
+        current_state=path[-1]
+        if current_state in visited:   #l
+            continue
+        if current_state==(0,0,0):   #The boat is at the right side
+            return path
+        visited.add(current_state) #it is added to the visited array
+        for s in successor(current_state):
+            if s not in visited:
+                new_path=path+[s]
+                print('Path :',new_path)
+                new_cost=cost+1
+                print('Cost :',new_cost)
+                heapq.heappush(heap,(new_cost+heuristic(s),new_cost,new_path))
+    return None
+
+start_state=(3,3,1)  #initial state
+solution=astar(start_state)
+if solution:
+    print(solution)
+else:
+    print('No solution Found')
+

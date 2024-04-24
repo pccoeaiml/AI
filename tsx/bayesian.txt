@@ -1,0 +1,33 @@
+import numpy as np
+import pandas as pd
+
+examlevel = np.zeros(shape=(1, 2))
+IQlevel = np.zeros(shape=(1, 2))
+marks = np.zeros(8).reshape(4, 2)
+admission = np.zeros(shape=(2, 2))
+
+examlevel[0][0] = float(input('enter the conditional probability of easy exam: '))
+examlevel[0][1] = float(input('enter the conditional probability of difficult exam: '))
+IQlevel[0][0] = float(input('enter the conditional probability of bad IQ level: '))
+IQlevel[0][1] = float(input('enter the conditional probability of good IQ level: '))
+
+for i in range(0, 4):
+    for j in range(0, 2):
+        marks[i][j] = float(input(f'enter the conditional probability: '))
+
+indx = ['i0e0', 'i0e1', 'ile0', 'ile1']
+marksCPT = pd.DataFrame(marks, columns=['m0', 'm1'])
+marksCPT['row'] = indx
+
+admcols = ['a0', 'a1']
+admindx = marksCPT.columns
+for i in range(0, 2):
+    for j in range(0, 2):
+        admission[i][j] = float(input(f'enter the {admindx[i]} and {admcols[j]}: '))
+admindx = list(admindx)
+admissionCPT = pd.DataFrame(admission, columns=admcols)
+admissionCPT['row'] = admindx
+admissionCPT.set_index('row', inplace=True)
+
+s = input('enter P() ').split(',')
+print(admissionCPT.loc[s[1], s[0]] * marksCPT.loc[s[2] + s[3], s[1]] * examlevelCPT.loc[0, s[3]] * IQlevelCPT.loc[0, s[2]])

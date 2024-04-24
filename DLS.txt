@@ -1,0 +1,39 @@
+class Graph:
+    def __init__(self):
+        self.graph = {}
+
+    def add_edge(self, node, neighbors):
+        self.graph[node] = neighbors
+
+def depth_limited_search(graph, node, goal, depth_limit):
+    return recursive_dls(graph, node, goal, depth_limit)
+
+def recursive_dls(graph, node, goal, depth_limit):
+    print(node, end="->")
+    if node == goal:
+        return True
+    elif depth_limit == 0:
+        return False
+    else:
+        for neighbor in graph.get(node, []):
+            if recursive_dls(graph, neighbor, goal, depth_limit - 1):
+                return True
+        return False
+
+my_graph = Graph()
+my_graph.add_edge("A", ["B", "C"])
+my_graph.add_edge("B", ["D", "E"])
+my_graph.add_edge("C", ["F"])
+my_graph.add_edge("E", ["F"])
+
+initial_state = "A"
+goal_state = "D"
+depth_limit = 2
+
+result = depth_limited_search(my_graph.graph, initial_state, goal_state, depth_limit)
+
+if result:
+    print("\nGoal found within depth limit!")
+else:
+    print("Goal not found within depth limit.")
+

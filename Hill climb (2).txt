@@ -1,0 +1,74 @@
+import copy
+visited_states = []
+def heuristic(curr_state,goal_state):
+goal_=goal_state[3]
+val=0
+for i in range(len(curr_state)):
+check_val=curr_state[i] #the value of i will increment
+if len(check_val)>0: #//The block where the elements is present for the above example the
+length is 4
+for j in range(len(check_val)): #1D array elements a,b,c,d
+if check_val[j]!=goal_[j]:
+# val-=1
+val-=j #val=val-j
+else:
+# val+=1
+val+=j #val=val+1
+return val
+def generate_next(curr_state,prev_heu,goal_state):
+global visited_states # decalred globally
+state = copy.deepcopy(curr_state) #copying the curr_state(it copy as it is with the address
+and the value)
+for i in range(len(state)): #for traversing
+temp = copy.deepcopy(state) #copying in the temp means storing like [a],[b,c,a]
+here,original
+if len(temp[i]) > 0: #here,the length is 4 because the original list
+elem = temp[i].pop() #poping the element from the original state for the above
+example the value of i is 3 [d],[b,c,a]
+for j in range(len(temp)):
+temp1 = copy.deepcopy(temp) #storing the curr_state like [d],[b,c,a]
+if j != i:
+temp1[j] = temp1[j] + [elem] #aranging the element d and b,c,a like this [d],[b,c,a]
+if (temp1 not in visited_states):
+curr_heu=heuristic(temp1,goal_state) #calculating the hvalue
+# if a better state than previous state of found
+if curr_heu>prev_heu: #comparing the current and the goal state
+child = copy.deepcopy(temp1)
+return child #if the child is not generated then return 0
+
+# no better soln than current state is possible
+
+return 0
+def solution_(init_state,goal_state):
+global visited_states
+# checking if initial state is already the final state
+if (init_state == goal_state): # in 1st iteration it is [d],[b,c,a]
+print (goal_state)
+print("solution found!")
+return
+current_state = copy.deepcopy(init_state) #storing the initial_state into current state
+# loop while goal is found or no better optimal solution is possible
+while(True):
+visited_states.append(copy.deepcopy(current_state)) # add current state to visited to
+avoid repetition
+print(current_state)
+prev_heu=heuristic(current_state,goal_state) #calculating the hvalue of each state
+generated 1
+# generate possible better child from current state
+child = generate_next(current_state,prev_heu,goal_state) #calling the heuristic function to
+generate the child
+# No more better states are possible
+if child==0: # if no child state generated [IMP]
+print("Final state - ",current_state)
+return
+# change current state to child
+current_state = copy.deepcopy(child)
+
+def solver():
+# maintaining a global visited to save all visited and avoid repetition & infinite loop condition
+global visited_states
+# inputs
+init_state = [[],[],[],['B','C','D','A']] #giving the input
+goal_state = [[],[],[],['A','B','C','D']] #goal state
+solution_(init_state,goal_state)
+solver()

@@ -1,0 +1,117 @@
+class Block:
+    def __init__(self, name):
+        self.name = name
+        self.on = None
+        self.clear = True
+        self.ontable = True
+
+    def __repr__(self):
+        return self.name
+
+class BlocksWorldPlanner:
+    def __init__(self, initial_state, goal_state):
+        self.initial_state = initial_state
+        self.goal_state = goal_state
+        self.goal_stack = []
+        self.actions = []
+        self.blocks = {}
+
+    def run(self):
+        self.parse_initial_state()
+        self.goal_stack.append(self.goal_state)
+        while self.goal_stack:
+            goal = self.goal_stack[-1]
+            if isinstance(goal, str):
+                if goal.startswith('ON'):
+                    self.handle_on_goal(goal)
+                elif goal.startswith('ONTABLE'):
+                    self.handle_ontable_goal(goal)
+                elif goal.startswith('CLEAR'):
+                    self.handle_clear_goal(goal)
+            elif isinstance(goal, Block):
+                self.handle_block_goal(goal)
+        print("Actions:")
+        for action in self.actions:
+            print(action)
+
+    def parse_initial_state(self):
+        # Parse the initial state and update block objects accordingly
+        for statement in self.initial_state.split(' ∧ '):
+            if statement.startswith('ON'):
+                block1, block2 = statement[3:-1].split(',')
+                self.blocks[block1].on = self.blocks[block2]
+                self.blocks[block1].clear = False
+                self.blocks[block2].clear = False
+            elif statement.startswith('ONTABLE'):
+                block = statement[8:]
+                self.blocks[block].ontable = True
+                self.blocks[block].clear = False
+            elif statement.startswith('CLEAR'):
+                block = statement[6:]
+                self.blocks[block].clear = True
+            elif statement == 'ARMEMPTY':
+                pass
+
+    def handle_on_goal(self, goal):
+        # Handle the ON goal
+        block1, block2 = goal[3:-1].split(',')
+        if self.blocks[block1].on == self.blocks[block2]:
+            self.goal_stack.pop()
+        else:
+            self.goal_stack.append(self.blocks[block1].on)
+
+    def handle_ontable_goal(self, goal):
+        # Handle the ONTABLE goal
+        block = goal[8:]
+        if self.blocks[block].ontable:
+            self.goal_stack.pop()
+        else:
+            self.goal_stack.append(block)
+
+    def handle_clear_goal(self, goal):
+        # Handle the CLEAR goal
+        block = goal[6:]
+        if self.blocks[block].clear:
+            self.goal_stack.pop()
+        else:
+            for b in self.blocks.values():
+                if b.clear:
+                    self.goal_stack.append(b)
+                    break
+
+    def handle_block_goal(self, goal):
+        # Handle a block goal
+        if goal.clear and goal.ontable:
+            pass
+        elif goal.clear:
+            self.goal_stack.append("ONTABLE({})".format(goal.name))
+        elif goal.ontable:
+            self.goal_stack.append("CLEAR({})".format(goal.name))
+        else:
+            self.goal_stack.append("CLEAR({})".format(goal.name))
+            self.goal_stack.append("ONTABLE({})".format(goal.name))
+        if goal.on:
+            self.goal_stack.append("ON({}, {})".format(goal.on.name, goal.name))
+
+    def add_action(self, action):
+        # Add an action to the list of actions
+        self.actions.append(action)
+
+    def move(self, block, source, destination):
+        # Perform a move action
+        self.add_action("Move({}, {}, {})".format(block, source, destination))
+        if source == 'ARM':
+            self.blocks[block].ontable = False
+        else:
+            self.blocks[source].on = None
+            self.blocks[source].clear = True
+        if destination == 'ARM':
+            self.blocks[block].ontable = True
+
+planner = BlocksWorldPlanner("A on B, C on TABLE, D on table", "C on A, B on D, A on TABLE, D on TABLE")
+# Run the planner
+planner.run()
+# Print the actions
+print("Actions:")
+for action in planner.actions:
+    print(action)
