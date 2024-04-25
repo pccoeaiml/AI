@@ -1,0 +1,60 @@
+class Action:
+    def __init__(self, name, preconds, add_effects, del_effects):
+        self.name = name
+        self.preconds = preconds
+        self.add_effects = add_effects
+        self.del_effects = del_effects
+
+def goal_stack_planning(initial_state, goals, actions):
+    stack = []
+    plan = []
+    state = set(initial_state)
+    
+    # Push the goals onto the stack
+    for goal in reversed(goals):
+        stack.append(goal)
+    
+    while stack:
+        item = stack.pop()
+        
+        if isinstance(item, tuple):
+            # If the item is a goal (tuple), check if it is already satisfied
+            if item in state:
+                continue
+            # If not satisfied, select an action to satisfy the goal
+            for action in actions:
+                if item in action.add_effects:
+                    # Push the action onto the stack
+                    stack.append(action)
+                    # Push all preconditions of this action onto the stack
+                    for precond in reversed(action.preconds):
+                        stack.append(precond)
+                    break
+        elif isinstance(item, Action):
+            # If the item is an action, execute it and update the state
+            plan.append(item.name)
+            # Update the state - remove delete effects, add add effects
+            state.difference_update(item.del_effects)
+            state.update(item.add_effects)
+            
+    return plan
+
+# Example usage
+if __name__ == "__main__":
+    # Define some actions
+    actions = [
+        Action("Stack A on B", preconds={("clear", "A"), ("clear", "B"), ("on table", "A")},
+               add_effects={("on", "A", "B"), ("clear", "A")},
+               del_effects={("clear", "B"), ("on table", "A")}),
+        Action("Move A to table", preconds={("clear", "A"), ("on", "A", "B")},
+               add_effects={("on table", "A"), ("clear", "B")},
+               del_effects={("clear", "A"), ("on", "A", "B")})
+    ]
+
+    # Initial state and goals
+    initial_state = {("clear", "A"), ("clear", "B"), ("on table", "A"), ("on table", "B")}
+    goals = {("on", "A", "B")}
+
+    # Perform goal stack planning
+    plan = goal_stack_planning(initial_state, goals, actions)
+    print("Plan to achieve goals:", plan)
